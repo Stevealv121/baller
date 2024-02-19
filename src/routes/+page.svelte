@@ -1,26 +1,49 @@
 <script>
-	let players = [
-		{
-			name: 'Cristiano',
-			goals: 10
-		},
-		{
-			name: 'Messi',
-			goals: 10
-		}
-	];
+	import { initializeApp } from 'firebase/app';
+	import {
+		getFirestore,
+		collection,
+		doc,
+		updateDoc,
+		increment,
+		onSnapshot,
+		deleteDoc,
+		addDoc
+	} from 'firebase/firestore';
+	import { firebaseConfig } from '$lib/firebaseConfig.js';
+
+	const firebaseApp = initializeApp(firebaseConfig);
+	const db = getFirestore(firebaseApp);
+	//console.log({ firebaseApp, db });
+
+	const colRef = collection(db, 'players');
+
+	let players = [];
+
+	const unsubscribe = onSnapshot(colRef, (querySnapshot) => {
+		let fbPlayers = [];
+		querySnapshot.forEach((doc) => {
+			let player = { ...doc.data(), id: doc.id };
+			fbPlayers = [player, ...fbPlayers];
+		});
+		players = fbPlayers;
+	});
 
 	let name = '';
 	let error = '';
 
-	const addPlayer = () => {
+	const addPlayer = async () => {
 		let new_player = {
 			name: name,
 			goals: 0
 		};
 
+		const docRef = await addDoc(collection(db, 'players'), {
+			name: new_player.name,
+			goals: new_player.goals
+		});
+
 		if (name !== '') {
-			players = [...players, new_player];
 			error = '';
 		} else {
 			error = 'Name cannot be empty';
@@ -28,15 +51,22 @@
 		name = '';
 	};
 
-	const addGoal = (index) => {
-		players[index].goals += 1;
+	const addGoal = async (item) => {
+		const playerRef = doc(db, 'players', item.id);
+
+		await updateDoc(playerRef, {
+			goals: increment(1)
+		});
 	};
-	const removeGoal = (index) => {
-		players[index].goals -= 1;
+	const removeGoal = async (item) => {
+		const playerRef = doc(db, 'players', item.id);
+
+		await updateDoc(playerRef, {
+			goals: increment(-1)
+		});
 	};
-	const deletePlayer = (index) => {
-		let deleteItem = players[index];
-		players = players.filter((item) => item !== deleteItem);
+	const deletePlayer = async (item) => {
+		await deleteDoc(doc(db, 'players', item.id));
 	};
 </script>
 
@@ -45,13 +75,13 @@
 <br />
 
 <ul>
-	{#each players as player, index}
+	{#each players as player}
 		<li>
 			<span>{player.name} - </span>
 			<span>{player.goals} goals</span>
-			<span><button on:click={() => addGoal(index)}>+</button></span>
-			<span><button on:click={() => removeGoal(index)}>-</button></span>
-			<span><button on:click={() => deletePlayer(index)}>Delete</button></span>
+			<span><button on:click={() => addGoal(player)}>+</button></span>
+			<span><button on:click={() => removeGoal(player)}>-</button></span>
+			<span><button on:click={() => deletePlayer(player)}>Delete</button></span>
 		</li>
 	{:else}
 		<p>There are no players</p>
