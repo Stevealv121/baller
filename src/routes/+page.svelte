@@ -11,6 +11,8 @@
 		addDoc
 	} from 'firebase/firestore';
 	import { firebaseConfig } from '$lib/firebaseConfig.js';
+	import { IconTrashFilled } from '@tabler/icons-svelte';
+	import { IconPlus, IconMinus } from '@tabler/icons-svelte';
 
 	const firebaseApp = initializeApp(firebaseConfig);
 	const db = getFirestore(firebaseApp);
@@ -26,6 +28,8 @@
 			let player = { ...doc.data(), id: doc.id };
 			fbPlayers = [player, ...fbPlayers];
 		});
+		//order players by goals
+		fbPlayers.sort((a, b) => b.goals - a.goals);
 		players = fbPlayers;
 	});
 
@@ -70,26 +74,53 @@
 	};
 </script>
 
-<input type="text" placeholder="Add new player" bind:value={name} />
-<button on:click={addPlayer}>Add</button>
-<br />
+<section class="grid gap-8 px-10 md:items-center md:text-left">
+	<br />
+	<h2 class="mb-2 text-4xl font-medium">Top Scorers</h2>
+	<input type="text" placeholder="Add new player" bind:value={name} />
+	<button type="button" class="variant-filled-primary btn" on:click={addPlayer}>Add</button>
+	<br />
 
-<ul>
-	{#each players as player}
-		<li>
-			<span>{player.name} - </span>
-			<span>{player.goals} goals</span>
-			<span><button on:click={() => addGoal(player)}>+</button></span>
-			<span><button on:click={() => removeGoal(player)}>-</button></span>
-			<span><button on:click={() => deletePlayer(player)}>Delete</button></span>
-		</li>
-	{:else}
-		<p>There are no players</p>
-	{/each}
-	<p class="error">{error}</p>
-</ul>
+	<ol class="list">
+		{#each players as player}
+			<div class="card p-4">
+				<div class="grid gap-8 sm:grid-cols-5 md:items-center">
+					<div class="card variant-filled-primary p-4 sm:text-center">
+						{player.name}
+					</div>
+					<div class="card variant-filled-primary p-4 sm:text-center">{player.goals} goals</div>
+					<span
+						><button
+							type="button"
+							class="variant-filled-primary btn"
+							on:click={() => addGoal(player)}><IconPlus></IconPlus></button
+						></span
+					>
+					<span
+						><button
+							type="button"
+							class="variant-filled-primary btn"
+							on:click={() => removeGoal(player)}><IconMinus></IconMinus></button
+						></span
+					>
+					<span
+						><button
+							type="button"
+							class="variant-filled-primary btn"
+							on:click={() => deletePlayer(player)}><IconTrashFilled /></button
+						></span
+					>
+				</div>
+			</div>
+		{:else}
+			<p>There are no players</p>
+		{/each}
+		<p class="error">{error}</p>
+	</ol>
+	<br />
 
-<a href="/about">About Us</a>
+	<a href="/about">About Us</a>
+</section>
 
 <style>
 	.error {
