@@ -6,7 +6,7 @@
 	//import './styles.css';
 	import { AppBar } from '@skeletonlabs/skeleton';
 	import { IconMenu2 } from '@tabler/icons-svelte';
-	import { IconUserHexagon } from '@tabler/icons-svelte';
+
 	import { LightSwitch } from '@skeletonlabs/skeleton';
 </script>
 

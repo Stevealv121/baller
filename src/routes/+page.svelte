@@ -13,6 +13,8 @@
 	import { firebaseConfig } from '$lib/firebaseConfig.js';
 	import { IconTrashFilled } from '@tabler/icons-svelte';
 	import { IconPlus, IconMinus } from '@tabler/icons-svelte';
+	import { SlideToggle } from '@skeletonlabs/skeleton';
+	import { IconUserCircle } from '@tabler/icons-svelte';
 
 	const firebaseApp = initializeApp(firebaseConfig);
 	const db = getFirestore(firebaseApp);
@@ -72,44 +74,49 @@
 	const deletePlayer = async (item) => {
 		await deleteDoc(doc(db, 'players', item.id));
 	};
+	let edit = false;
 </script>
 
-<section class="grid gap-8 px-10 md:items-center md:text-left">
+<section class="grid max-w-3xl gap-8 px-10 md:items-center md:text-left">
 	<br />
 	<h2 class="mb-2 text-4xl font-medium">Top Scorers</h2>
 	<input type="text" placeholder="Add new player" bind:value={name} />
 	<button type="button" class="variant-filled-primary btn" on:click={addPlayer}>Add</button>
 	<br />
+	<SlideToggle name="slider-labeled" bind:checked={edit}>Edit</SlideToggle>
 
 	<ol class="list">
-		{#each players as player}
+		{#each players as player, index}
 			<div class="card p-4">
-				<div class="grid gap-8 sm:grid-cols-5 md:items-center">
-					<div class="card variant-filled-primary p-4 sm:text-center">
-						{player.name}
+				<div class="grid max-w-3xl grid-cols-1 gap-8">
+					<div class="card variant-filled-primary grid grid-cols-5 p-4">
+						<div class="left-0">{index + 1}.</div>
+
+						<IconUserCircle class="-ml-7"></IconUserCircle>
+
+						<div class="col-span-2 -ml-10">{player.name}</div>
+						<div class="-ml-5">{player.goals} goals</div>
 					</div>
-					<div class="card variant-filled-primary p-4 sm:text-center">{player.goals} goals</div>
-					<span
-						><button
+
+					{#if edit}
+						<button
 							type="button"
 							class="variant-filled-primary btn"
 							on:click={() => addGoal(player)}><IconPlus></IconPlus></button
-						></span
-					>
-					<span
-						><button
+						>
+
+						<button
 							type="button"
 							class="variant-filled-primary btn"
 							on:click={() => removeGoal(player)}><IconMinus></IconMinus></button
-						></span
-					>
-					<span
-						><button
+						>
+
+						<button
 							type="button"
 							class="variant-filled-primary btn"
 							on:click={() => deletePlayer(player)}><IconTrashFilled /></button
-						></span
-					>
+						>
+					{/if}
 				</div>
 			</div>
 		{:else}
